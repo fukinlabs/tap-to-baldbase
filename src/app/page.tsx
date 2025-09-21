@@ -44,8 +44,8 @@ export default function Home() {
     },
   ] as const;
   
-  // Gas limit estimation using contract simulation
-  const { data: simulationData, isLoading: isEstimatingGas, error: simulationError } = useSimulateContract({
+  // Simulate contract with automatic gas estimation
+  const { data: simulationData, error: simulationError, isLoading: isSimulating } = useSimulateContract({
     address: nftAddress,
     abi: nftAbi,
     functionName: 'publicMint',
@@ -55,9 +55,8 @@ export default function Home() {
     },
   });
   
-  // Extract gas limit from simulation and add 20% buffer for safety
-  const estimatedGas = simulationData?.request?.gas;
-  const gasLimitWithBuffer = estimatedGas ? (estimatedGas * BigInt(120)) / BigInt(100) : undefined;
+  // Extract gas limit from simulation (Wagmi automatically adds buffer)
+  const gasLimitWithBuffer = simulationData?.request?.gas;
   
   // Check if simulation failed
   const simulationFailed = simulationError !== null;
@@ -196,9 +195,9 @@ const handleMint = async () => {
       return;
     }
     
-    // 5. Simulation failure check - CRITICAL: Prevent gas loss
+    // 5. Contract simulation check - CRITICAL: Prevent gas loss
     if (simulationFailed) {
-      alert(`❌ Transaction Simulation Failed!\n\nReason: ${simulationErrorMessage}\n\nThis transaction would fail and cause gas fee loss.\n\nPlease check:\n• Contract address is correct\n• You have sufficient balance\n• Contract is not paused\n• You haven't already minted`);
+      alert(`❌ Contract Simulation Failed!\n\nReason: ${simulationErrorMessage}\n\nThis transaction would fail and cause gas fee loss.\n\nPlease check:\n• Contract address is correct\n• You have sufficient balance\n• Contract is not paused\n• You haven't already minted`);
       return;
     }
     
@@ -210,13 +209,13 @@ const handleMint = async () => {
     
     // All checks passed - Safe to mint!
     try {
-      // Execute the mint transaction
+      // Execute the mint transaction using simulation data
       await writeContract({
-        address: nftAddress,  
+        address: nftAddress,
         abi: nftAbi,
-        functionName: "publicMint",
+        functionName: 'publicMint',
         args: [],
-        gas: gasLimitWithBuffer,
+        gas: gasLimitWithBuffer, // Use auto-estimated gas from simulation
       });
     } catch (err) {
       console.error("Mint error:", err);
@@ -324,29 +323,29 @@ const handleMint = async () => {
           {/* Gas Limit */}
           <div className="mb-3">
             <div className="text-xs text-gray-500 mb-1">Gas Limit</div>
-            {isEstimatingGas ? (
-              <div className="text-lg font-bold text-blue-500">Estimating...</div>
+            {isSimulating ? (
+              <div className="text-lg font-bold text-blue-500">Simulating...</div>
             ) : simulationFailed ? (
               <div className="text-lg font-bold text-red-500">Simulation Failed</div>
             ) : gasLimitWithBuffer ? (
               <div className="text-lg font-bold text-green-500">
                 {gasLimitWithBuffer.toString()} 
-                <span className="text-xs text-gray-500 ml-1">(+20% buffer)</span>
+                <span className="text-xs text-gray-500 ml-1">(auto-estimated)</span>
               </div>
             ) : (
               <div className="text-lg font-bold text-red-500">Failed to estimate</div>
             )}
           </div>
           
-          {/* Simulation Status */}
+          {/* Contract Simulation Status */}
           <div className="mb-3">
             <div className="text-xs text-gray-500 mb-1">Transaction Status</div>
-            {isEstimatingGas ? (
+            {isSimulating ? (
               <div className="text-sm font-bold text-blue-500">🔄 Simulating...</div>
             ) : simulationFailed ? (
               <div className="text-sm font-bold text-red-500">❌ Will Fail</div>
             ) : gasLimitWithBuffer ? (
-              <div className="text-sm font-bold text-green-500">✅ Safe to Execute</div>
+              <div className="text-sm font-bold text-green-500">✅ Ready to Execute</div>
             ) : (
               <div className="text-sm font-bold text-yellow-500">⚠️ Unknown Status</div>
             )}
@@ -370,7 +369,7 @@ const handleMint = async () => {
               ⚠️ Chain not supported for minting
             </div>
           )}
-          {!gasLimitWithBuffer && !isEstimatingGas && !simulationFailed && (
+          {!gasLimitWithBuffer && !isSimulating && !simulationFailed && (
             <div className="text-red-600 text-sm mt-2 font-medium">
               ⚠️ Gas limit estimation failed
             </div>
@@ -382,15 +381,15 @@ const handleMint = async () => {
   {isConnected && (
         <button
           onClick={handleMint}
-          disabled={isPending || isFeeTooHigh || !isChainSupported || !gasLimitWithBuffer || isEstimatingGas || simulationFailed || !contractIsHealthy || !hasEnoughForGas}
+          disabled={isPending || isFeeTooHigh || !isChainSupported || !gasLimitWithBuffer || isSimulating || simulationFailed || !contractIsHealthy || !hasEnoughForGas}
           className={`px-6 py-3 font-semibold rounded-xl shadow-md transition ${
-            isFeeTooHigh || !isChainSupported || !gasLimitWithBuffer || isEstimatingGas || simulationFailed || !contractIsHealthy || !hasEnoughForGas
+            isFeeTooHigh || !isChainSupported || !gasLimitWithBuffer || isSimulating || simulationFailed || !contractIsHealthy || !hasEnoughForGas
               ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
               : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 shadow-lg'
           }`}
         >
           {isPending ? "🔄 Minting..." : 
-           isEstimatingGas ? "🔄 Estimating Gas..." :
+           isSimulating ? "🔄 Simulating Contract..." :
            simulationFailed ? "❌ Transaction Will Fail" :
            !contractIsHealthy ? "❌ Contract Not Ready" :
            !hasEnoughForGas ? "❌ Insufficient Gas" :
