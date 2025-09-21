@@ -15,12 +15,12 @@ export default function Home() {
    const { data: feeData } = useFeeData();
    const chainId = useChainId();
    
-   // Contract addresses for different chains
-   const contractAddresses = {
-     [mainnet.id]: "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7" as `0x${string}`, // Ethereum mainnet
-     [base.id]: "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7" as `0x${string}`, // Base mainnet (same for demo)
-     [baseSepolia.id]: "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7" as `0x${string}`, // Base Sepolia testnet
-   };
+  // Contract addresses for different chains
+  const contractAddresses = {
+    [mainnet.id]: "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7" as `0x${string}`, // Ethereum mainnet
+    [base.id]: "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7" as `0x${string}`, // BlueSquareOnChain (BSC) on Base
+    [baseSepolia.id]: "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7" as `0x${string}`, // Base Sepolia testnet
+  };
    
    const nftAddress = contractAddresses[chainId as keyof typeof contractAddresses];
   
@@ -139,11 +139,109 @@ export default function Home() {
     },
   });
   
+  // Check if user has already minted (common cause of revert)
+  const { data: userNFTBalance } = useReadContract({
+    address: nftAddress,
+    abi: [
+      {
+        name: "balanceOf",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ internalType: "address", name: "owner", type: "address" }],
+        outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      },
+    ],
+    functionName: "balanceOf",
+    args: [address!],
+    query: {
+      enabled: !!nftAddress && isConnected && !!address,
+    },
+  });
+  
+  // Check if minting is active (some contracts have this)
+  const { data: mintingActive } = useReadContract({
+    address: nftAddress,
+    abi: [
+      {
+        name: "mintingActive",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      },
+    ],
+    functionName: "mintingActive",
+    query: {
+      enabled: !!nftAddress && isConnected,
+    },
+  });
+  
+  // Check if there's a whitelist requirement
+  const { data: isWhitelisted } = useReadContract({
+    address: nftAddress,
+    abi: [
+      {
+        name: "whitelist",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ internalType: "address", name: "", type: "address" }],
+        outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      },
+    ],
+    functionName: "whitelist",
+    args: [address!],
+    query: {
+      enabled: !!nftAddress && isConnected && !!address,
+    },
+  });
+  
+  // Check if there's a public sale active (common for new contracts)
+  const { data: publicSaleActive } = useReadContract({
+    address: nftAddress,
+    abi: [
+      {
+        name: "publicSaleActive",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      },
+    ],
+    functionName: "publicSaleActive",
+    query: {
+      enabled: !!nftAddress && isConnected,
+    },
+  });
+  
+  // Check if there's a presale active
+  const { data: presaleActive } = useReadContract({
+    address: nftAddress,
+    abi: [
+      {
+        name: "presaleActive",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      },
+    ],
+    functionName: "presaleActive",
+    query: {
+      enabled: !!nftAddress && isConnected,
+    },
+  });
+  
   // Safe mint conditions
   const hasEnoughBalance = userBalance && mintPrice ? userBalance.value >= mintPrice : true; // Assume free mint if no price
   const isNotSoldOut = maxSupply ? (totalSupply || BigInt(0)) < maxSupply : true;
   const isNotPaused = isPaused === false;
-  const contractIsHealthy = hasEnoughBalance && isNotSoldOut && isNotPaused;
+  const hasNotMinted = userNFTBalance === undefined || userNFTBalance === BigInt(0); // User hasn't minted yet
+  const mintingIsActive = mintingActive === undefined || mintingActive === true; // Assume active if not specified
+  const isWhitelistedUser = isWhitelisted === undefined || isWhitelisted === true; // Assume whitelisted if not specified
+  const publicSaleIsActive = publicSaleActive === undefined || publicSaleActive === true; // Assume active if not specified
+  const presaleIsActive = presaleActive === undefined || presaleActive === false; // Assume not in presale if not specified
+  
+  const contractIsHealthy = hasEnoughBalance && isNotSoldOut && isNotPaused && hasNotMinted && mintingIsActive && isWhitelistedUser && publicSaleIsActive;
   
   // Calculate estimated transaction cost
   const estimatedTxCost = feeData?.gasPrice && gasLimitWithBuffer 
@@ -184,6 +282,21 @@ const handleMint = async () => {
       }
       if (!isNotPaused) {
         errorMsg += `• Contract is paused\n`;
+      }
+      if (!hasNotMinted) {
+        errorMsg += `• You have already minted (Balance: ${userNFTBalance})\n`;
+      }
+      if (!mintingIsActive) {
+        errorMsg += `• Minting is not active\n`;
+      }
+      if (!isWhitelistedUser) {
+        errorMsg += `• You are not whitelisted\n`;
+      }
+      if (!publicSaleIsActive) {
+        errorMsg += `• Public sale is not active\n`;
+      }
+      if (presaleIsActive) {
+        errorMsg += `• Currently in presale phase\n`;
       }
       alert(errorMsg);
       return;
@@ -299,6 +412,99 @@ const handleMint = async () => {
               Price: {formatEther(mintPrice)} ETH
             </div>
           )}
+          
+          {/* User NFT Balance */}
+          {userNFTBalance !== undefined && (
+            <div className="mt-2 text-xs text-gray-600">
+              Your NFTs: {userNFTBalance.toString()}
+            </div>
+          )}
+          
+          {/* Minting Status */}
+          {mintingActive !== undefined && (
+            <div className="mt-2 text-xs text-gray-600">
+              Minting Active: {mintingActive ? '✅ Yes' : '❌ No'}
+            </div>
+          )}
+          
+          {/* Whitelist Status */}
+          {isWhitelisted !== undefined && (
+            <div className="mt-2 text-xs text-gray-600">
+              Whitelisted: {isWhitelisted ? '✅ Yes' : '❌ No'}
+            </div>
+          )}
+          
+          {/* Public Sale Status */}
+          {publicSaleActive !== undefined && (
+            <div className="mt-2 text-xs text-gray-600">
+              Public Sale: {publicSaleActive ? '✅ Active' : '❌ Inactive'}
+            </div>
+          )}
+          
+          {/* Presale Status */}
+          {presaleActive !== undefined && (
+            <div className="mt-2 text-xs text-gray-600">
+              Presale: {presaleActive ? '🟡 Active' : '⚪ Inactive'}
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+    
+    {/* Contract Debug Information */}
+    {isConnected && simulationFailed && (
+      <div className="mb-4 p-4 bg-red-50 rounded-xl border border-red-200">
+        <div className="text-center">
+          <div className="text-sm text-red-600 mb-3">🔍 Contract Debug Info</div>
+          
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            {/* Contract Status */}
+            <div className="text-center">
+              <div className="text-gray-500 mb-1">Contract</div>
+              <div className={`font-bold ${isNotPaused ? 'text-green-600' : 'text-red-600'}`}>
+                {isNotPaused ? '✅ Active' : '❌ Paused'}
+              </div>
+            </div>
+            
+            {/* Supply Status */}
+            <div className="text-center">
+              <div className="text-gray-500 mb-1">Supply</div>
+              <div className={`font-bold ${isNotSoldOut ? 'text-green-600' : 'text-red-600'}`}>
+                {isNotSoldOut ? '✅ Available' : '❌ Sold Out'}
+              </div>
+            </div>
+            
+            {/* User Status */}
+            <div className="text-center">
+              <div className="text-gray-500 mb-1">Your Status</div>
+              <div className={`font-bold ${hasNotMinted ? 'text-green-600' : 'text-red-600'}`}>
+                {hasNotMinted ? '✅ Can Mint' : '❌ Already Minted'}
+              </div>
+            </div>
+            
+            {/* Minting Status */}
+            <div className="text-center">
+              <div className="text-gray-500 mb-1">Minting</div>
+              <div className={`font-bold ${mintingIsActive ? 'text-green-600' : 'text-red-600'}`}>
+                {mintingIsActive ? '✅ Active' : '❌ Inactive'}
+              </div>
+            </div>
+          </div>
+          
+          {/* Detailed Error Info */}
+          <div className="mt-3 text-xs text-gray-600">
+            <div className="font-medium text-red-600 mb-1">Possible Reasons:</div>
+            <div className="text-left space-y-1">
+              {!hasNotMinted && <div>• You have already minted this NFT</div>}
+              {!isNotPaused && <div>• Contract is currently paused</div>}
+              {!isNotSoldOut && <div>• Collection is sold out</div>}
+              {!mintingIsActive && <div>• Minting is not active</div>}
+              {!isWhitelistedUser && <div>• You are not whitelisted</div>}
+              {!publicSaleIsActive && <div>• Public sale is not active</div>}
+              {presaleIsActive && <div>• Currently in presale phase</div>}
+              {!hasEnoughBalance && <div>• Insufficient ETH balance</div>}
+            </div>
+          </div>
         </div>
       </div>
     )}
