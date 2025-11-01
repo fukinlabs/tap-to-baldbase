@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image"; 
 import Link from "next/link";
 import ConnectButton from "../components/ConnectButton";
+import GameButton from "../components/GameButton";
 
 
 import { useAccount, useWriteContract } from "wagmi"; 
@@ -39,50 +39,56 @@ const handleMint = async () => {
   };
    
   return (
-   <div className="font-sans grid grid-rows-[auto_1fr_20px] min-h-screen">
+   <div className="font-sans grid grid-rows-[auto_1fr_20px] min-h-screen bg-gradient-to-br from-sky-100 to-purple-100">
   {/* Navbar */}
-  <header className="w-full flex justify-end p-4">
+  <header className="w-full flex justify-between items-center p-4">
+    <Link href="/slap">
+      <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all hover:from-blue-600 hover:to-purple-700">
+        🎮 เล่นเกม
+      </button>
+    </Link>
     <ConnectButton />
   </header>
 
   {/* Main */}
-  <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start p-8 sm:p-20">
-    <Image
-      className="dark:invert"
-      src="/next.svg"
-      alt="Next.js logo"
-      width={180}
-      height={38}
-      priority
-    />
+  <main className="flex flex-col gap-8 row-start-2 items-center justify-center p-8 sm:p-20">
+    <div className="text-center space-y-4">
+      <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+        👋 Tap to GM
+      </h1>
+      <p className="text-lg text-gray-600 mb-8">เกมตบหัวโล้นสนุกๆ พร้อม Mint NFT</p>
+    </div>
 
-    <h1 className="text-4xl mb-6">👋 Tap to GM</h1>
-  {isConnected && (
-        <button
-          onClick={handleMint}
-          disabled={isPending}
-          className="px-6 py-3 bg-green-500 text-white font-semibold rounded-xl shadow-md hover:bg-green-600 transition"
-        >
-          {isPending ? "Minting..." : "Mint NFT 🎨"}
-        </button>
+    {/* ปุ่มเล่นเกมหลัก - ใหญ่และเด่นชัด - รองรับ Farcaster Mini App */}
+    <GameButton />
+
+    <div className="flex flex-col sm:flex-row gap-4 items-center">
+      {isConnected && (
+        <>
+          <button
+            onClick={handleMint}
+            disabled={isPending}
+            className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50 hover:from-green-600 hover:to-emerald-700"
+          >
+            {isPending ? "กำลัง Mint..." : "Mint NFT 🎨"}
+          </button>
+          <p className="text-gray-600 text-sm bg-white/80 px-4 py-2 rounded-lg">
+            Connected: {address?.slice(0, 6)}...{address?.slice(-4)}
+          </p>
+        </>
       )}
-
- {isConnected && (
-        <p className="text-gray-600 text-sm">Connected: {address}</p>
-      )}
-
-    <Link href="/slap">
-      <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all hover:from-blue-600 hover:to-purple-700">
-        🎮 เล่นเกมตบหัวโล้น
-      </button>
-    </Link>
+    </div>
 
     {/* ... เนื้อหาอื่น ๆ ของคุณ ... */}
   </main>
 
   {/* Footer */}
-  <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center p-4">
-    {/* ลิงก์ต่าง ๆ */}
+  <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center p-4 bg-white/50 backdrop-blur-sm">
+    <Link href="/slap">
+      <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all hover:from-blue-600 hover:to-purple-700">
+        🎮 เล่นเกมตบหัวโล้น
+      </button>
+    </Link>
   </footer>
 </div>
   );

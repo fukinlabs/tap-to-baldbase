@@ -67,7 +67,7 @@ const config = createConfig({
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
-   <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
         {/* ✅ ใส่ RainbowKitProvider ครอบ */}
         <RainbowKitProvider>
           {children}
