@@ -2,11 +2,41 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Image from 'next/image';
+import Link from 'next/link';
+import { useAccount, useWriteContract } from 'wagmi';
 
 type Pos = { x: number; y: number; vx: number; vy: number };
 
 export default function MobileSlapGame() {
+  const { isConnected } = useAccount();
+  const nftAddress = "0x0f898954922dF5f81B9607015706eC8935a449a1";
+  const nftAbi = [
+    {
+      name: "publicMint",
+      type: "function",
+      stateMutability: "nonpayable",
+      inputs: [],
+      outputs: [
+        { internalType: "uint256", name: "", type: "uint256" }
+      ],
+    },
+  ] as const;
+  const { writeContract, isPending: isMinting } = useWriteContract();
   
+  const handleMint = async () => {
+    if (!isConnected) return;
+    try {
+      await writeContract({
+        address: nftAddress,
+        abi: nftAbi,
+        functionName: "publicMint",
+        args: [],
+      });
+    } catch (err) {
+      console.error("Mint error:", err);
+    }
+  };
+
   const GAME_TIME = 30;
   const OBSTACLE_COUNT = 3;
 
@@ -313,12 +343,28 @@ export default function MobileSlapGame() {
               <div className="text-2xl font-bold text-yellow-600">{highScore}</div>
             </div>
           )}
-          <button
-            onClick={startGame}
-            className="w-full py-4 bg-gradient-to-r from-green-400 to-blue-500 text-white text-xl font-bold rounded-2xl shadow-lg active:scale-95 transition-transform"
-          >
-            เริ่มเกม! 🎮
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={startGame}
+              className="w-full py-4 bg-gradient-to-r from-green-400 to-blue-500 text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all hover:from-green-500 hover:to-blue-600"
+            >
+              🎮 เริ่มเกม!
+            </button>
+            {isConnected && (
+              <button
+                onClick={handleMint}
+                disabled={isMinting}
+                className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-lg font-semibold rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              >
+                {isMinting ? "กำลัง Mint..." : "Mint NFT 🎨"}
+              </button>
+            )}
+            <Link href="/" className="block">
+              <button className="w-full py-3 bg-gray-200 text-gray-700 text-lg font-semibold rounded-2xl shadow-inner hover:bg-gray-300 active:scale-95 transition-all">
+                กลับหน้าแรก 🏠
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -344,17 +390,24 @@ export default function MobileSlapGame() {
           <div className="text-2xl font-mono font-bold text-red-500">{timeLeft}</div>
           <div className="text-xs text-gray-600">วินาที</div>
         </div>
-        <button
-          onClick={() => {
-            setRunning(false);
-            setShowStartScreen(true);
-            if (animRef.current) cancelAnimationFrame(animRef.current);
-            if (timerRef.current) clearInterval(timerRef.current);
-          }}
-          className="px-4 py-2 bg-red-400 text-white rounded-xl text-sm font-medium active:scale-95 transition-transform"
-        >
-          หยุด
-        </button>
+        <div className="flex gap-2">
+          <Link href="/">
+            <button className="px-3 py-2 bg-gray-400 text-white rounded-xl text-sm font-medium active:scale-95 transition-transform">
+              🏠
+            </button>
+          </Link>
+          <button
+            onClick={() => {
+              setRunning(false);
+              setShowStartScreen(true);
+              if (animRef.current) cancelAnimationFrame(animRef.current);
+              if (timerRef.current) clearInterval(timerRef.current);
+            }}
+            className="px-4 py-2 bg-red-400 text-white rounded-xl text-sm font-medium active:scale-95 transition-transform"
+          >
+            หยุด
+          </button>
+        </div>
       </div>
 
       {/* Game Area */}
@@ -389,29 +442,43 @@ export default function MobileSlapGame() {
 
         {/* Moving Head */}
         <div
-          onTouchStart={handleSlap}
-          onClick={handleSlap}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleSlap(e);
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            handleSlap(e);
+          }}
           className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-150 ${
-            hitAnim ? "scale-90 rotate-12" : "hover:scale-105"
+            hitAnim ? "scale-90 rotate-12" : "hover:scale-105 active:scale-95"
           }`}
           style={{
             left: `${pos.x}%`,
             top: `${pos.y}%`,
             filter: hitAnim ? "brightness(1.2)" : "none",
-            cursor: "none",
+            cursor: "pointer",
+            touchAction: "manipulation",
+            userSelect: "none",
+            WebkitTapHighlightColor: "transparent",
           }}
         >
           <div className="relative w-20 h-20 md:w-24 md:h-24">
             <div className="absolute inset-0 bg-yellow-300 rounded-full blur-lg opacity-50 animate-pulse scale-125"></div>
             <Image 
               src="/slap/blad.png"
-              alt="หัวล้าน"
+              alt="หัวล้าน - คลิกเพื่อตบ!"
               width={96}
               height={96}
-              className="drop-shadow-lg relative z-10 w-full h-full"
+              className="drop-shadow-lg relative z-10 w-full h-full pointer-events-none"
               priority
               unoptimized
             />
+            {!hitAnim && running && (
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-yellow-700 animate-pulse pointer-events-none whitespace-nowrap">
+                👆 คลิก!
+              </div>
+            )}
           </div>
           {hitAnim && (
             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-lg font-bold text-yellow-600 animate-bounce pointer-events-none">
@@ -467,19 +534,35 @@ export default function MobileSlapGame() {
                     <p className="text-xs text-gray-500">สูงสุด: {highScore}</p>
                   )}
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={startGame}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-sky-500 text-white font-bold shadow-md hover:shadow-lg active:scale-95 transition-all"
-                  >
-                    เล่นอีก! <span className="ml-1">🎮</span>
-                  </button>
-                  <button
-                    onClick={() => setShowStartScreen(true)}
-                    className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-inner hover:bg-gray-200 active:scale-95 transition-all"
-                  >
-                    หลัก
-                  </button>
+                <div className="space-y-2">
+                  <div className="flex gap-3">
+                    <button
+                      onClick={startGame}
+                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-sky-500 text-white font-bold shadow-md hover:shadow-lg active:scale-95 transition-all"
+                    >
+                      เล่นอีก! <span className="ml-1">🎮</span>
+                    </button>
+                    <button
+                      onClick={() => setShowStartScreen(true)}
+                      className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-inner hover:bg-gray-200 active:scale-95 transition-all"
+                    >
+                      หลัก
+                    </button>
+                  </div>
+                  {isConnected && (
+                    <button
+                      onClick={handleMint}
+                      disabled={isMinting}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {isMinting ? "กำลัง Mint..." : "Mint NFT 🎨"}
+                    </button>
+                  )}
+                  <Link href="/" className="block">
+                    <button className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-inner hover:bg-gray-200 active:scale-95 transition-all">
+                      กลับหน้าแรก 🏠
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>

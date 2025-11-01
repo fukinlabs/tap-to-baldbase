@@ -72,8 +72,8 @@ const handleMint = async () => {
       )}
 
     <Link href="/slap">
-      <button className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-2xl shadow-md hover:bg-blue-600 transition">
-        เล่นเกมตบหัวโล้น 🎮
+      <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-lg font-bold rounded-2xl shadow-lg hover:shadow-xl active:scale-95 transition-all hover:from-blue-600 hover:to-purple-700">
+        🎮 เล่นเกมตบหัวโล้น
       </button>
     </Link>
 
