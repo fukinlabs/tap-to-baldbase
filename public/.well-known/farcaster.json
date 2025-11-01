@@ -5,7 +5,7 @@
     "signature": ""
   },
   "baseBuilder": {
-    "ownerAddress": "0x..."
+    "ownerAddress": "0xd8d99a1cfae5cbfe2e70567227c0fff0000d705b"
   },
   "miniapp": {
     "version": "1",
@@ -13,7 +13,7 @@
     "homeUrl": "https://tap-to-baldbase.vercel.app",
     "iconUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "splashImageUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
-    "splashBackgroundColor": "#0000ff",
+    "splashBackgroundColor": "#FFF",
      "buttonTitle": "🚩 Start",
     "webhookUrl": "https://tap-to-baldbase.vercel.app/api/webhook",
     "subtitle": "Tap the bald head game",
