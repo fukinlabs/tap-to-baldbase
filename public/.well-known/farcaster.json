@@ -14,6 +14,7 @@
     "iconUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "splashImageUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "splashBackgroundColor": "#0000ff",
+     "buttonTitle": "🚩 Start",
     "webhookUrl": "https://tap-to-baldbase.vercel.app/api/webhook",
     "subtitle": "Tap the bald head game",
     "description": "Play a fun tapping game and mint NFTs. Tap the bald head to score points while avoiding blue squares!",
