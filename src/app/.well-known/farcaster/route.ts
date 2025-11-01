@@ -29,7 +29,7 @@ export async function GET() {
       homeUrl: ROOT_URL,
       iconUrl: `${ROOT_URL}/slap/blad.png`,
       splashImageUrl: `${ROOT_URL}/slap/blad.png`,
-      splashBackgroundColor: "#6366f1",
+      splashBackgroundColor: "#000",
       webhookUrl: `${ROOT_URL}/api/webhook`,
       subtitle: "Tap the bald head game",
       description: "Play a fun tapping game and mint NFTs. Tap the bald head to score points while avoiding blue squares!",
