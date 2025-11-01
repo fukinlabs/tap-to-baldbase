@@ -4,92 +4,86 @@ import Image from "next/image";
 import Link from "next/link";
 import ConnectButton from "../components/ConnectButton";
 
-import { useAccount, useNetwork, useSwitchNetwork, usePrepareContractWrite, useContractWrite } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
+
+import { useAccount, useWriteContract } from "wagmi"; 
+// import { parseEther } from "viem";
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
-
-  const nftAddress = "0x4Bc50987CFdcEfb473e61b4fED45CBF3dd1900B7";
+   const { address, isConnected } = useAccount();
+    // 👇 สมมติคุณมี Contract ABI และ Address
+  const nftAddress = "0x0f898954922dF5f81B9607015706eC8935a449a1";
   const nftAbi = [
     {
-      name: "safeMint",
+      name: "publicMint",
       type: "function",
       stateMutability: "nonpayable",
       inputs: [],
-      outputs: [],
+      outputs: [
+        { internalType: "uint256", name: "", type: "uint256" }
+      ],
     },
-  ];
+  ] as const;
 
-  // Prepare + estimate gas
-  const { config } = usePrepareContractWrite({
-    address: nftAddress,
-    abi: nftAbi,
-    functionName: "safeMint",
-    args: [],
-    enabled: isConnected && chain?.id === baseSepolia.id,
-  });
-
-  const { write: safeMintWrite, isLoading: isPending } = useContractWrite(config);
-
-  const handleSafeMint = () => {
-    if (!isConnected) return alert("Connect wallet first!");
-
-    if (chain?.id !== baseSepolia.id) {
-      if (switchNetwork) switchNetwork(baseSepolia.id);
-      else return alert("Please switch wallet to Base Sepolia testnet!");
-      return;
+    const { writeContract, isPending } = useWriteContract();
+const handleMint = async () => {
+    try {
+      await writeContract({
+        address: nftAddress,
+        abi: nftAbi,
+        functionName: "publicMint",
+        args: [],
+      });
+    } catch (err) {
+      console.error("Mint error:", err);
     }
-
-    safeMintWrite?.();
   };
-
+   
   return (
-    <div className="font-sans grid grid-rows-[auto_1fr_20px] min-h-screen">
-      {/* Navbar */}
-      <header className="w-full flex justify-end p-4">
-        <ConnectButton />
-      </header>
+   <div className="font-sans grid grid-rows-[auto_1fr_20px] min-h-screen">
+  {/* Navbar */}
+  <header className="w-full flex justify-end p-4">
+    <ConnectButton />
+  </header>
 
-      {/* Main */}
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start p-8 sm:p-20">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
+  {/* Main */}
+  <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start p-8 sm:p-20">
+    <Image
+      className="dark:invert"
+      src="/next.svg"
+      alt="Next.js logo"
+      width={180}
+      height={38}
+      priority
+    />
 
-        <h1 className="text-4xl mb-6">👋 Tap to GM</h1>
+    <h1 className="text-4xl mb-6">👋 Tap to GM</h1>
+  {isConnected && (
+        <button
+          onClick={handleMint}
+          disabled={isPending}
+          className="px-6 py-3 bg-green-500 text-white font-semibold rounded-xl shadow-md hover:bg-green-600 transition"
+        >
+          {isPending ? "Minting..." : "Mint NFT 🎨"}
+        </button>
+      )}
 
-        {isConnected && (
-          <button
-            onClick={handleSafeMint}
-            disabled={isPending}
-            className="px-6 py-3 bg-green-500 text-white font-semibold rounded-xl shadow-md hover:bg-green-600 transition"
-          >
-            {isPending ? "Minting..." : "Safe Mint NFT 🎨"}
-          </button>
-        )}
+ {isConnected && (
+        <p className="text-gray-600 text-sm">Connected: {address}</p>
+      )}
 
-        {isConnected && (
-          <p className="text-gray-600 text-sm">Connected: {address}</p>
-        )}
+    <Link href="/slap">
+      <button className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-2xl shadow-md hover:bg-blue-600 transition">
+        เล่นเกมตบหัวโล้น 🎮
+      </button>
+    </Link>
 
-        <Link href="/slap">
-          <button className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-2xl shadow-md hover:bg-blue-600 transition">
-            เล่นเกมตบหัวโล้น 🎮
-          </button>
-        </Link>
-      </main>
+    {/* ... เนื้อหาอื่น ๆ ของคุณ ... */}
+  </main>
 
-      {/* Footer */}
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center p-4">
-      </footer>
-    </div>
+  {/* Footer */}
+  <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center p-4">
+    {/* ลิงก์ต่าง ๆ */}
+  </footer>
+</div>
   );
 }

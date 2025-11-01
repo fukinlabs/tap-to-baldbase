@@ -305,7 +305,7 @@ export default function MobileSlapGame() {
           <h1 className="text-3xl font-bold mb-4 text-gray-800">ตบหัวโล้น</h1>
           <p className="text-gray-600 mb-6 text-sm leading-relaxed">
             แตะหัวโล้นให้ได้มากที่สุด<br />
-            หลีกเลี่ยงลูกบอลสีแดง!
+            หลีกเลี่ยงสี่เหลี่ยมสีน้ำเงิน!
           </p>
           {highScore > 0 && (
             <div className="mb-6 p-3 bg-yellow-100 rounded-lg">
@@ -373,7 +373,7 @@ export default function MobileSlapGame() {
         {obstacles.map((o, idx) => (
           <div
             key={idx}
-            className="absolute cursor-pointer text-red-500"
+            className="absolute cursor-pointer"
             style={{ 
               left: `${o.x}%`, 
               top: `${o.y}%`, 
@@ -383,7 +383,7 @@ export default function MobileSlapGame() {
             onClick={handleObstacleClick}
             onTouchStart={handleObstacleClick}
           >
-            <div className="w-full h-full bg-red-500 rounded-full"></div>
+            <div className="w-full h-full bg-blue-600"></div>
           </div>
         ))}
 
@@ -443,32 +443,44 @@ export default function MobileSlapGame() {
 
         {/* Game Over Overlay */}
         {gameOver && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl p-6 mx-4 text-center shadow-2xl max-w-sm">
-              <div className="text-5xl mb-3">💥</div>
-              <h2 className="text-2xl font-bold mb-2 text-red-600">เกมจบแล้ว!</h2>
-              <div className="mb-4 space-y-2">
-                <p className="text-xl">
-                  คะแนน: <span className="font-bold text-blue-600">{score}</span>
-                </p>
-                {score === highScore && score > 0 && (
-                  <p className="text-sm text-yellow-600 font-medium">🎉 สถิติใหม่!</p>
-                )}
-                {highScore > 0 && score !== highScore && <p className="text-sm text-gray-500">สูงสุด: {highScore}</p>}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={startGame}
-                  className="flex-1 py-3 bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold rounded-2xl active:scale-95 transition-transform"
-                >
-                  เล่นอีก! 🎮
-                </button>
-                <button
-                  onClick={() => setShowStartScreen(true)}
-                  className="px-4 py-3 bg-gray-200 text-gray-700 font-medium rounded-2xl active:scale-95 transition-transform"
-                >
-                  หลัก
-                </button>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-md">
+            <div className="relative mx-4 w-full max-w-sm">
+              <div className="absolute -inset-0.5 rounded-[28px] bg-gradient-to-br from-fuchsia-500/60 via-amber-400/60 to-sky-500/60 blur"></div>
+              <div className="relative rounded-[24px] bg-white/95 dark:bg-white p-7 text-center shadow-2xl">
+                <div className="mx-auto mb-4 grid place-items-center">
+                  <div className="size-14 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-400 text-white grid place-items-center shadow-lg animate-pulse">
+                    <span className="text-3xl">💥</span>
+                  </div>
+                </div>
+                <h2 className="text-3xl font-extrabold tracking-tight mb-1 text-red-600">เกมจบแล้ว!</h2>
+                <p className="text-base text-gray-600 mb-4">ลองอีกครั้งเพื่อทำลายสถิติของคุณ</p>
+                <div className="mb-5 space-y-2">
+                  <p className="text-2xl font-semibold">
+                    คะแนน: <span className="font-black text-blue-600 drop-shadow-sm">{score}</span>
+                  </p>
+                  {score === highScore && score > 0 && (
+                    <p className="text-sm text-yellow-600 font-semibold flex items-center justify-center gap-2">
+                      <span>🎉</span> <span>สถิติใหม่!</span>
+                    </p>
+                  )}
+                  {highScore > 0 && score !== highScore && (
+                    <p className="text-xs text-gray-500">สูงสุด: {highScore}</p>
+                  )}
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={startGame}
+                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-sky-500 text-white font-bold shadow-md hover:shadow-lg active:scale-95 transition-all"
+                  >
+                    เล่นอีก! <span className="ml-1">🎮</span>
+                  </button>
+                  <button
+                    onClick={() => setShowStartScreen(true)}
+                    className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-inner hover:bg-gray-200 active:scale-95 transition-all"
+                  >
+                    หลัก
+                  </button>
+                </div>
               </div>
             </div>
           </div>

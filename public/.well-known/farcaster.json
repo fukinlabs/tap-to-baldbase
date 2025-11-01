@@ -1,0 +1,35 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "baseBuilder": {
+    "ownerAddress": "0x..."
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Tap to Baldbase",
+    "homeUrl": "https://your-domain.com",
+    "iconUrl": "https://your-domain.com/icon.png",
+    "splashImageUrl": "https://your-domain.com/splash.png",
+    "splashBackgroundColor": "#6366f1",
+    "webhookUrl": "",
+    "subtitle": "Tap the bald head game",
+    "description": "Play a fun tapping game and mint NFTs. Tap the bald head to score points while avoiding blue squares!",
+    "screenshotUrls": [
+      "https://your-domain.com/screenshot1.png",
+      "https://your-domain.com/screenshot2.png",
+      "https://your-domain.com/screenshot3.png"
+    ],
+    "primaryCategory": "games",
+    "tags": ["games", "nft", "blockchain", "casual"],
+    "heroImageUrl": "https://your-domain.com/hero.png",
+    "tagline": "Tap, play, mint",
+    "ogTitle": "Tap to Baldbase",
+    "ogDescription": "Tap the bald head game with NFT minting",
+    "ogImageUrl": "https://your-domain.com/og.png",
+    "noindex": true
+  }
+}
+

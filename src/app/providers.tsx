@@ -11,23 +11,32 @@ import { createConfig, http, WagmiProvider } from 'wagmi'
 import { mainnet, base, baseSepolia } from 'wagmi/chains'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@rainbow-me/rainbowkit/styles.css";
+import { connectorsForWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import {
-  connectorsForWallets,
-  getDefaultWallets,
-  RainbowKitProvider,
-} from "@rainbow-me/rainbowkit";
+  metaMaskWallet,
+  walletConnectWallet,
+  injectedWallet,
+  rainbowWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 const chains = [mainnet, base, baseSepolia] as const;
 
 
 const queryClient = new QueryClient(); 
 
-// สร้าง connectors สำหรับ multi-wallet
-const { wallets } = getDefaultWallets({
-  appName: 'Tap to Baldbase',
-  projectId: projectId || 'fallback-project-id',
-});
+// สร้าง connectors สำหรับ multi-wallet (exclude Coinbase Wallet to avoid telemetry inline script)
+const supportedWallets = [
+  {
+    groupName: "Recommended",
+    wallets: [
+      metaMaskWallet,
+      rainbowWallet,
+      injectedWallet,
+      walletConnectWallet,
+    ],
+  },
+];
 
-const connectors = connectorsForWallets(wallets, {
+const connectors = connectorsForWallets(supportedWallets, {
   appName: 'Tap to Baldbase',
   projectId: projectId || 'fallback-project-id',
 });
@@ -60,7 +69,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
    <QueryClientProvider client={queryClient}>
         {/* ✅ ใส่ RainbowKitProvider ครอบ */}
-        <RainbowKitProvider >
+        <RainbowKitProvider>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
