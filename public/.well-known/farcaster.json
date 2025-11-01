@@ -9,7 +9,7 @@
   },
   "miniapp": {
     "version": "1",
-    "name": "Tap to Baldbase",
+    "name": "Tap to Baldbasetest",
     "homeUrl": "https://tap-to-baldbase.vercel.app",
     "iconUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "splashImageUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
