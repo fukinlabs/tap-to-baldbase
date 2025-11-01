@@ -10,25 +10,24 @@
   "miniapp": {
     "version": "1",
     "name": "Tap to Baldbase",
-    "homeUrl": "https://your-domain.com",
-    "iconUrl": "https://your-domain.com/icon.png",
-    "splashImageUrl": "https://your-domain.com/splash.png",
+    "homeUrl": "https://tap-to-baldbase.vercel.app",
+    "iconUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
+    "splashImageUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "splashBackgroundColor": "#6366f1",
-    "webhookUrl": "",
+    "webhookUrl": "https://tap-to-baldbase.vercel.app/api/webhook",
     "subtitle": "Tap the bald head game",
     "description": "Play a fun tapping game and mint NFTs. Tap the bald head to score points while avoiding blue squares!",
     "screenshotUrls": [
-      "https://your-domain.com/screenshot1.png",
-      "https://your-domain.com/screenshot2.png",
-      "https://your-domain.com/screenshot3.png"
+      "https://tap-to-baldbase.vercel.app/slap/blad.png",
+      "https://tap-to-baldbase.vercel.app/slap/hand.png"
     ],
     "primaryCategory": "games",
     "tags": ["games", "nft", "blockchain", "casual"],
-    "heroImageUrl": "https://your-domain.com/hero.png",
+    "heroImageUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "tagline": "Tap, play, mint",
     "ogTitle": "Tap to Baldbase",
     "ogDescription": "Tap the bald head game with NFT minting",
-    "ogImageUrl": "https://your-domain.com/og.png",
+    "ogImageUrl": "https://tap-to-baldbase.vercel.app/slap/blad.png",
     "noindex": true
   }
 }
