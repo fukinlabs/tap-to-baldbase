@@ -25,7 +25,7 @@ export async function GET() {
     },
     miniapp: {
       version: "1",
-      name: "Tap to Baldbase",
+      name: "Tap to Baldbaseappp",
       homeUrl: ROOT_URL,
       iconUrl: `${ROOT_URL}/slap/blad.png`,
       splashImageUrl: `${ROOT_URL}/slap/blad.png`,
